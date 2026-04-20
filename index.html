@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinClear — Financial Wellness Calculators</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e2a;
+    --border: #252a38;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --gold-dim: rgba(201,168,76,0.12);
+    --text: #e8e6df;
+    --text-muted: #7a7d8a;
+    --text-dim: #4a4e5c;
+    --green: #3ecf8e;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+{ margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }  /* ─── Background texture ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(201,168,76,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(96,165,250,0.05) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }  /* ─── Header ─── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13,15,20,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+  }
+  .logo span { color: var(--text); font-weight: 400; }  .tagline {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }  /* ─── Hero ─── */
+  .hero {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 5rem 2rem 3rem;
+  }  .hero-badge {
+    display: inline-block;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold-light);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 1.5rem;
+  }  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--text) 0%, var(--gold-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }  .hero p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    max-width: 540px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }  /* ─── Tool nav ─── */
+  .tool-nav {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 2rem 2rem;
+    overflow-x: auto;
+    justify-content: center;
+    flex-wrap: wrap;
+  }  .tool-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tool-btn:hover { border-color: var(--gold); color: var(--text); }
+  .tool-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #0d0f14;
+    font-weight: 700;
+  }
+  .tool-btn .icon { font-size: 1rem; }  /* ─── Calculator container ─── */
+  .calc-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem 4rem;
+  }  .calc-panel {
+    display: none;
+    animation: fadeIn 0.35s ease;
+  }
+  .calc-panel.active { display: block; }  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media(max-width: 720px) { .calc-grid { grid-template-columns: 1fr; } }  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+  }  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+    color: var(--text);
+  }  .card-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 1.8rem;
+    line-height: 1.5;
+  }  /* ─── Form elements ─── */
+  .field { margin-bottom: 1.2rem; }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }  .prefix {
+    position: absolute;
+    left: 1rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    pointer-events: none;
+  }  input[type="number"], input[type="range"], select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    padding: 0.75rem 1rem 0.75rem 2.2rem;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus, select:focus { border-color: var(--gold); }  input.no-prefix { padding-left: 1rem; }  input[type="range"] {
+    -webkit-appearance: none;
+    height: 4px;
+    background: var(--border);
+    border: none;
+    border-radius: 2px;
+    padding: 0;
+    cursor: pointer;
+    margin-top: 0.3rem;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    box-shadow: 0 0 0 3px var(--gold-dim);
+  }  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 0.3rem;
+  }  .btn-calc {
+    width: 100%;
+    padding: 0.9rem;
+    background: var(--gold);
+    color: #0d0f14;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+  .btn-calc:hover { background: var(--gold-light); transform: translateY(-1px); }  /* ─── Results card ─── */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+  }  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }  .big-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 2.4rem;
+    font-weight: 500;
+    color: var(--gold-light);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }  .big-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 1.5rem;
+  }  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--text-muted); }
+  .stat-val {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .stat-val.green { color: var(--green); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.gold { color: var(--gold-light); }  /* Progress bar */
+  .progress-bar {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0.4rem 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--green));
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }  /* ─── Debt snowball specific ─── */
+  .debt-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+    position: relative;
+  }  .debt-item-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 0.8rem;
+    align-items: end;
+  }
+  @media(max-width: 500px) { .debt-item-grid { grid-template-columns: 1fr 1fr; } }  .debt-remove {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+  .debt-remove:hover { border-color: var(--red); color: var(--red); }  .add-debt-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    width: 100%;
+    padding: 0.8rem;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    transition: all 0.2s;
+    margin-bottom: 1rem;
+  }
+  .add-debt-btn:hover { border-color: var(--gold); color: var(--gold); }  /* ─── Timeline / payoff order ─── */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }  .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.85rem;
+  }  .timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--gold);
+    flex-shrink: 0;
+  }  .timeline-label { color: var(--text-muted); }
+  .timeline-date { font-family: 'DM Mono', monospace; color: var(--text); margin-left: auto; }  /* ─── BMI gauge ─── */
+  .bmi-gauge {
+    height: 14px;
+    border-radius: 7px;
+    background: linear-gradient(90deg, #60a5fa 0%, #3ecf8e 30%, #f59e0b 65%, #f87171 100%);
+    position: relative;
+    margin: 1rem 0;
+  }  .bmi-pointer {
+    position: absolute;
+    top: -4px;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border: 3px solid var(--bg);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 0 2px var(--gold);
+    transition: left 0.5s ease;
+  }  .bmi-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 0.3rem;
+  }  /* ─── Sleep cycles ─── */
+  .cycle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.8rem;
+    margin-top: 1rem;
+  }  .cycle-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .cycle-card.best { border-color: var(--gold); }  .cycle-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin-bottom: 0.3rem;
+  }
+  .cycle-cycles { font-size: 0.75rem; color: var(--text-muted); }
+  .cycle-badge {
+    display: inline-block;
+    background: var(--gold-dim);
+    color: var(--gold-light);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.4rem;
+  }  /* ─── Retirement chart ─── */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 120px;
+    margin: 1rem 0;
+  }  .bar-chart-bar {
+    flex: 1;
+    background: linear-gradient(0deg, var(--gold), var(--gold-light));
+    border-radius: 3px 3px 0 0;
+    transition: height 0.5s ease;
+    min-height: 2px;
+  }  .bar-chart-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+  }  /* ─── Freelance rate ─── */
+  .rate-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }  .rate-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.2rem;
+    text-align: center;
+  }
+  .rate-box.highlight { border-color: var(--gold); }  .rate-box-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.5rem;
+    color: var(--gold-light);
+    margin-bottom: 0.2rem;
+  }
+  .rate-box-label { font-size: 0.72rem; color: var(--text-muted); }  /* ─── Footer ─── */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+  }  footer a { color: var(--gold); text-decoration: none; }  .disclaimer {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 2rem;
+    line-height: 1.6;
+  }  /* ad placeholder */
+  .ad-slot {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    margin-bottom: 1.5rem;
+  }  select {
+    padding-left: 1rem;
+    cursor: pointer;
+  }  .section-heading {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    margin: 1.5rem 0 0.8rem;
+  }  .info-tip {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    background: rgba(96,165,250,0.08);
+    border: 1px solid rgba(96,165,250,0.2);
+    border-radius: var(--radius-sm);
+    padding: 0.8rem 1rem;
+    font-size: 0.82rem;
+    color: #93c5fd;
+    line-height: 1.5;
+    margin-top: 1rem;
+  }
+</style></head>
+<body>
+
+<header>
+  <div class="logo">Fin<span>Clear</span></div>
+  <div class="tagline">Free Financial Calculators</div>
+</header>
+
+<div class="hero">
+  <div class="hero-badge">✦ 5 Tools · Free Forever · No Signup</div>
+  <h1>Make Smarter<br>Financial Decisions</h1>
+  <p>Free, instant calculators for debt payoff, retirement planning, health, sleep, and freelance rates. No ads. No email required.</p>
+</div>
+
+<div class="tool-nav">
+  <button class="tool-btn active" onclick="showTool('debt')" id="btn-debt">
+    <span class="icon"></span> Debt Snowball
+  </button>
+  <button class="tool-btn" onclick="showTool('retirement')" id="btn-retirement">
+    <span class="icon"></span> Retirement
+  </button>
+  <button class="tool-btn" onclick="showTool('bmi')" id="btn-bmi">
+    <span class="icon"></span> BMI & Calories
+  </button>
+  <button class="tool-btn" onclick="showTool('sleep')" id="btn-sleep">
+    <span class="icon"></span> Sleep Cycles
+  </button>
+  <button class="tool-btn" onclick="showTool('freelance')" id="btn-freelance">
+    <span class="icon"></span> Freelance Rate
+  </button>
+</div>
+
+<div class="calc-wrapper">
+
+  <!-- ════════════════════════════════════════
+       TOOL 1: DEBT SNOWBALL
+  ════════════════════════════════════════ -->
+  <div class="calc-panel active" id="panel-debt">
+    <div class="calc-grid">
+      <div class="card">
+        <div class="card-title">Debt Snowball Calculator</div>
+        <div class="card-sub">Add your debts. We'll show you the fastest path to freedom using the snowball method — smallest balance first.</div>
+
+    <div class="section-heading">Extra Monthly Payment</div>
+    <div class="field">
+      <label>Extra money toward debt ($/mo)</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="extra-payment" value="200" min="0">
+      </div>
+    </div>
+
+    <div class="section-heading">Your Debts</div>
+    <div id="debt-list">
+      <div class="debt-item">
+        <div class="debt-item-grid">
+          <div class="field" style="margin:0">
+            <label>Name</label>
+            <input type="text" class="no-prefix d-name" value="Credit Card" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;width:100%;outline:none;">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Balance ($)</label>
+            <div class="input-wrap">
+              <span class="prefix">$</span>
+              <input type="number" class="d-balance" value="4200" min="0">
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Min. Payment ($)</label>
+            <div class="input-wrap">
+              <span class="prefix">$</span>
+              <input type="number" class="d-min" value="120" min="0">
+            </div>
+          </div>
+          <button class="debt-remove" onclick="removeDebt(this)">✕</button>
+        </div>
+        <div class="field" style="margin-top:0.8rem;margin-bottom:0">
+          <label>Interest Rate (APR %)</label>
+          <div class="input-wrap">
+            <input type="number" class="d-rate no-prefix" value="19.9" min="0" max="100" step="0.1">
+          </div>
+        </div>
+      </div>
+      <div class="debt-item">
+        <div class="debt-item-grid">
+          <div class="field" style="margin:0">
+            <label>Name</label>
+            <input type="text" class="no-prefix d-name" value="Car Loan" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;width:100%;outline:none;">
+          </div>
+          <div class="field" style="margin:0">
+            <label>Balance ($)</label>
+            <div class="input-wrap">
+              <span class="prefix">$</span>
+              <input type="number" class="d-balance" value="12500" min="0">
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Min. Payment ($)</label>
+            <div class="input-wrap">
+              <span class="prefix">$</span>
+              <input type="number" class="d-min" value="350" min="0">
+            </div>
+          </div>
+          <button class="debt-remove" onclick="removeDebt(this)">✕</button>
+        </div>
+        <div class="field" style="margin-top:0.8rem;margin-bottom:0">
+          <label>Interest Rate (APR %)</label>
+          <div class="input-wrap">
+            <input type="number" class="d-rate no-prefix" value="6.9" min="0" max="100" step="0.1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="add-debt-btn" onclick="addDebt()">+ Add Another Debt</button>
+    <button class="btn-calc" onclick="calcDebt()">Calculate Payoff Plan →</button>
+  </div>
+
+  <div class="card result-card" id="debt-results">
+    <div class="result-title">Your Payoff Plan</div>
+
+    <div class="big-number" id="dr-total-months">—</div>
+    <div class="big-label">Months to debt freedom</div>
+
+    <div class="stat-row">
+      <span class="stat-label">Total debt today</span>
+      <span class="stat-val" id="dr-total-debt">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Total interest paid</span>
+      <span class="stat-val red" id="dr-interest">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Total paid (principal + interest)</span>
+      <span class="stat-val" id="dr-total-paid">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Debt-free date</span>
+      <span class="stat-val gold" id="dr-date">—</span>
+    </div>
+
+    <div class="section-heading" style="margin-top:1.5rem">Payoff Order</div>
+    <div class="timeline" id="dr-timeline"></div>
+
+    <div class="info-tip" style="margin-top:1.5rem">
+       Each time you pay off a debt, roll that payment into the next one. This is the snowball effect.
+    </div>
+  </div>
+</div>  </div>
+
+  <!-- ════════════════════════════════════════
+       TOOL 2: RETIREMENT
+  ════════════════════════════════════════ -->
+  <div class="calc-panel" id="panel-retirement">
+    <div class="calc-grid">
+      <div class="card">
+        <div class="card-title">Retirement Savings Projector</div>
+        <div class="card-sub">See how your nest egg grows with compound interest over time.</div>
+
+    <div class="field">
+      <label>Current Age</label>
+      <div class="input-wrap">
+        <input type="number" id="r-age" class="no-prefix" value="30" min="18" max="80">
+      </div>
+    </div>
+    <div class="field">
+      <label>Retirement Age</label>
+      <div class="input-wrap">
+        <input type="number" id="r-retire" class="no-prefix" value="65" min="40" max="90">
+      </div>
+    </div>
+    <div class="field">
+      <label>Current Savings ($)</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="r-current" value="15000">
+      </div>
+    </div>
+    <div class="field">
+      <label>Monthly Contribution ($)</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="r-monthly" value="500">
+      </div>
+    </div>
+    <div class="field">
+      <label>Expected Annual Return: <strong id="r-rate-label" style="color:var(--gold-light)">7%</strong></label>
+      <input type="range" id="r-rate" min="1" max="15" value="7" step="0.5" oninput="document.getElementById('r-rate-label').textContent=this.value+'%'">
+      <div class="range-labels"><span>1%</span><span>15%</span></div>
+    </div>
+    <div class="field">
+      <label>Employer Match (%)</label>
+      <div class="input-wrap">
+        <input type="number" id="r-match" class="no-prefix" value="3" min="0" max="100">
+      </div>
+    </div>
+
+    <button class="btn-calc" onclick="calcRetirement()">Project My Retirement →</button>
+  </div>
+
+  <div class="card result-card">
+    <div class="result-title">Retirement Projection</div>
+    <div class="big-number" id="ret-total">—</div>
+    <div class="big-label">Estimated nest egg at retirement</div>
+
+    <div class="stat-row">
+      <span class="stat-label">Years to retirement</span>
+      <span class="stat-val" id="ret-years">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Your contributions</span>
+      <span class="stat-val" id="ret-contrib">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Employer match value</span>
+      <span class="stat-val green" id="ret-match">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Investment growth</span>
+      <span class="stat-val gold" id="ret-growth">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Est. monthly income (4% rule)</span>
+      <span class="stat-val green" id="ret-monthly">—</span>
+    </div>
+
+    <div class="section-heading">Growth Over Time</div>
+    <div class="bar-chart" id="ret-chart"></div>
+    <div class="bar-chart-labels" id="ret-chart-labels"></div>
+  </div>
+</div>  </div>
+
+  <!-- ════════════════════════════════════════
+       TOOL 3: BMI + CALORIES
+  ════════════════════════════════════════ -->
+  <div class="calc-panel" id="panel-bmi">
+    <div class="calc-grid">
+      <div class="card">
+        <div class="card-title">BMI & Calorie Estimator</div>
+        <div class="card-sub">Calculate your Body Mass Index and daily calorie needs based on the Mifflin-St Jeor equation.</div>
+
+    <div class="field">
+      <label>Gender</label>
+      <select id="bmi-gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Age (years)</label>
+      <div class="input-wrap">
+        <input type="number" id="bmi-age" class="no-prefix" value="30" min="15" max="100">
+      </div>
+    </div>
+    <div class="field">
+      <label>Height</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;">
+        <div class="input-wrap">
+          <input type="number" id="bmi-feet" class="no-prefix" value="5" min="3" max="8" placeholder="ft">
+        </div>
+        <div class="input-wrap">
+          <input type="number" id="bmi-inches" class="no-prefix" value="10" min="0" max="11" placeholder="in">
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Weight (lbs)</label>
+      <div class="input-wrap">
+        <input type="number" id="bmi-weight" class="no-prefix" value="175" min="50" max="600">
+      </div>
+    </div>
+    <div class="field">
+      <label>Activity Level</label>
+      <select id="bmi-activity">
+        <option value="1.2">Sedentary (little/no exercise)</option>
+        <option value="1.375">Lightly active (1–3 days/week)</option>
+        <option value="1.55" selected>Moderately active (3–5 days/week)</option>
+        <option value="1.725">Very active (6–7 days/week)</option>
+        <option value="1.9">Extra active (athlete/physical job)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Goal</label>
+      <select id="bmi-goal">
+        <option value="lose">Lose weight (−500 cal/day)</option>
+        <option value="maintain" selected>Maintain weight</option>
+        <option value="gain">Gain weight (+500 cal/day)</option>
+      </select>
+    </div>
+
+    <button class="btn-calc" onclick="calcBMI()">Calculate →</button>
+  </div>
+
+  <div class="card result-card">
+    <div class="result-title">Your Health Stats</div>
+    <div class="big-number" id="bmi-result">—</div>
+    <div class="big-label" id="bmi-category">BMI Score</div>
+
+    <div class="bmi-gauge">
+      <div class="bmi-pointer" id="bmi-pointer" style="left:0%"></div>
+    </div>
+    <div class="bmi-labels">
+      <span>Under</span><span>Normal</span><span>Over</span><span>Obese</span>
+    </div>
+
+    <div style="margin-top:1.5rem">
+      <div class="stat-row">
+        <span class="stat-label">BMR (at rest calories)</span>
+        <span class="stat-val" id="bmi-bmr">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Daily calories to maintain</span>
+        <span class="stat-val" id="bmi-maintain">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Calories for your goal</span>
+        <span class="stat-val gold" id="bmi-goal-cal">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Healthy weight range</span>
+        <span class="stat-val green" id="bmi-healthy">—</span>
+      </div>
+    </div>
+
+    <div class="section-heading">Macros (goal calories)</div>
+    <div id="bmi-macros" style="display:flex;flex-direction:column;gap:0.4rem"></div>
+
+    <div class="info-tip">
+       These are estimates only. Consult a healthcare provider before making dietary changes.
+    </div>
+  </div>
+</div>  </div>
+
+  <!-- ════════════════════════════════════════
+       TOOL 4: SLEEP CYCLES
+  ════════════════════════════════════════ -->
+  <div class="calc-panel" id="panel-sleep">
+    <div class="calc-grid">
+      <div class="card">
+        <div class="card-title">Sleep Cycle Calculator</div>
+        <div class="card-sub">Wake up at the right time in your sleep cycle to feel refreshed. Each cycle is ~90 minutes.</div>
+
+    <div class="field">
+      <label>I want to...</label>
+      <select id="sleep-mode" onchange="toggleSleepMode()">
+        <option value="wakeup">Wake up at a specific time</option>
+        <option value="bedtime">Fall asleep at a specific time</option>
+      </select>
+    </div>
+
+    <div id="sleep-wakeup-field" class="field">
+      <label>Wake-up time</label>
+      <input type="time" id="sleep-wakeup" value="07:00" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;width:100%;outline:none;border-color: transparent;">
+    </div>
+
+    <div id="sleep-bedtime-field" class="field" style="display:none">
+      <label>Bedtime</label>
+      <input type="time" id="sleep-bedtime" value="22:30" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:0.75rem 1rem;color:var(--text);font-family:'DM Mono',monospace;font-size:1rem;width:100%;outline:none;">
+    </div>
+
+    <div class="field">
+      <label>Time to fall asleep: <strong id="sleep-latency-label" style="color:var(--gold-light)">14 min</strong></label>
+      <input type="range" id="sleep-latency" min="5" max="30" value="14" step="1"
+        oninput="document.getElementById('sleep-latency-label').textContent=this.value+' min'">
+      <div class="range-labels"><span>5 min</span><span>30 min</span></div>
+    </div>
+
+    <div class="field">
+      <label>Sleep quality goal</label>
+      <select id="sleep-cycles-pref">
+        <option value="6">6 cycles (9 hrs) — deep recovery</option>
+        <option value="5" selected>5 cycles (7.5 hrs) — recommended</option>
+        <option value="4">4 cycles (6 hrs) — minimum</option>
+        <option value="3">3 cycles (4.5 hrs) — emergency only</option>
+      </select>
+    </div>
+
+    <button class="btn-calc" onclick="calcSleep()">Calculate Sleep Times →</button>
+  </div>
+
+  <div class="card result-card">
+    <div class="result-title" id="sleep-result-title">Ideal Sleep Times</div>
+    <div class="big-number" id="sleep-primary">—</div>
+    <div class="big-label" id="sleep-primary-label">Best option (5 cycles)</div>
+
+    <div class="cycle-grid" id="sleep-cycles-grid"></div>
+
+    <div class="info-tip" style="margin-top:1rem">
+       Sleep in 90-min cycles. Waking mid-cycle causes grogginess — even with more total sleep.
+    </div>
+  </div>
+</div>  </div>
+
+  <!-- ════════════════════════════════════════
+       TOOL 5: FREELANCE RATE
+  ════════════════════════════════════════ -->
+  <div class="calc-panel" id="panel-freelance">
+    <div class="calc-grid">
+      <div class="card">
+        <div class="card-title">Freelance Rate Calculator</div>
+        <div class="card-sub">Find your true minimum hourly rate — accounting for taxes, benefits, non-billable hours, and profit.</div>
+
+    <div class="section-heading">Income Target</div>
+    <div class="field">
+      <label>Desired annual income ($)</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="fl-income" value="80000">
+      </div>
+    </div>
+
+    <div class="section-heading">Business Expenses (Annual)</div>
+    <div class="field">
+      <label>Software, tools, subscriptions ($)</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="fl-software" value="2400">
+      </div>
+    </div>
+    <div class="field">
+      <label>Health insurance ($)</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="fl-health" value="6000">
+      </div>
+    </div>
+    <div class="field">
+      <label>Other expenses ($)</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="number" id="fl-other" value="3000">
+      </div>
+    </div>
+
+    <div class="section-heading">Time & Tax</div>
+    <div class="field">
+      <label>Billable hours per week: <strong id="fl-hours-label" style="color:var(--gold-light)">30 hrs</strong></label>
+      <input type="range" id="fl-hours" min="5" max="60" value="30" step="1"
+        oninput="document.getElementById('fl-hours-label').textContent=this.value+' hrs'">
+      <div class="range-labels"><span>5 hrs</span><span>60 hrs</span></div>
+    </div>
+    <div class="field">
+      <label>Weeks worked per year: <strong id="fl-weeks-label" style="color:var(--gold-light)">48 wks</strong></label>
+      <input type="range" id="fl-weeks" min="30" max="52" value="48" step="1"
+        oninput="document.getElementById('fl-weeks-label').textContent=this.value+' wks'">
+      <div class="range-labels"><span>30 wks</span><span>52 wks</span></div>
+    </div>
+    <div class="field">
+      <label>Self-employment tax rate: <strong id="fl-tax-label" style="color:var(--gold-light)">30%</strong></label>
+      <input type="range" id="fl-tax" min="15" max="50" value="30" step="1"
+        oninput="document.getElementById('fl-tax-label').textContent=this.value+'%'">
+      <div class="range-labels"><span>15%</span><span>50%</span></div>
+    </div>
+    <div class="field">
+      <label>Profit buffer (%)</label>
+      <div class="input-wrap">
+        <input type="number" id="fl-profit" class="no-prefix" value="20" min="0" max="100">
+      </div>
+    </div>
+
+    <button class="btn-calc" onclick="calcFreelance()">Calculate My Rate →</button>
+  </div>
+
+  <div class="card result-card">
+    <div class="result-title">Your Freelance Rates</div>
+    <div class="big-number" id="fl-hourly">—</div>
+    <div class="big-label">Minimum hourly rate</div>
+
+    <div class="rate-comparison">
+      <div class="rate-box">
+        <div class="rate-box-val" id="fl-daily">—</div>
+        <div class="rate-box-label">Day rate</div>
+      </div>
+      <div class="rate-box highlight">
+        <div class="rate-box-val" id="fl-project">—</div>
+        <div class="rate-box-label">Typical project (40 hrs)</div>
+      </div>
+      <div class="rate-box">
+        <div class="rate-box-val" id="fl-monthly">—</div>
+        <div class="rate-box-label">Monthly retainer</div>
+      </div>
+      <div class="rate-box">
+        <div class="rate-box-val" id="fl-annual">—</div>
+        <div class="rate-box-label">Annual revenue needed</div>
+      </div>
+    </div>
+
+    <div class="section-heading">Breakdown</div>
+    <div class="stat-row">
+      <span class="stat-label">Take-home income</span>
+      <span class="stat-val green" id="fl-b-income">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Annual expenses</span>
+      <span class="stat-val red" id="fl-b-expenses">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Tax provision</span>
+      <span class="stat-val red" id="fl-b-tax">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Profit buffer</span>
+      <span class="stat-val gold" id="fl-b-profit">—</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">Total billable hours/year</span>
+      <span class="stat-val" id="fl-b-hours">—</span>
+    </div>
+
+    <div class="info-tip">
+       Never quote below your minimum rate. Add 20–30% for rush jobs or clients without retainers.
+    </div>
+  </div>
+</div>  </div>
+
+  <div class="disclaimer">
+    <strong>Disclaimer:</strong> All calculations are estimates for educational purposes only. FinClear does not provide financial, medical, or professional advice. Consult a qualified professional before making financial or health decisions. Results may vary based on actual interest rates, market performance, and individual circumstances.
+  </div>
+
+</div>
+
+<footer>
+  <strong>FinClear</strong> — Free financial & wellness calculators<br>
+  <span>No signup required · No data stored · Always free</span><br><br>
+  <a href="#">Privacy Policy</a>  ·  <a href="#">Terms</a>  ·  <a href="#">Suggest a Tool</a>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function showTool(name) {
+  document.querySelectorAll('.calc-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('btn-' + name).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+const fmt = (n, dec=0) => '$' + n.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const fmtN = (n) => n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function addMonths(date, months) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+// ═══════════════════════════════════════
+// TOOL 1: DEBT SNOWBALL
+// ═══════════════════════════════════════
+function addDebt() {
+  const list = document.getElementById('debt-list');
+  const div = document.createElement('div');
+  div.className = 'debt-item';
+  div.innerHTML = `
+    <div class="debt-item-grid">
+      <div class="field" style="margin:0">
+        <label>Name</label>
+        <input type="text" class="no-prefix d-name" value="New Debt" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.6rem 0.8rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;width:100%;outline:none;">
+      </div>
+      <div class="field" style="margin:0">
+        <label>Balance ($)</label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" class="d-balance" value="1000" min="0"></div>
+      </div>
+      <div class="field" style="margin:0">
+        <label>Min. Payment ($)</label>
+        <div class="input-wrap"><span class="prefix">$</span>
+          <input type="number" class="d-min" value="50" min="0"></div>
+      </div>
+      <button class="debt-remove" onclick="removeDebt(this)">✕</button>
+    </div>
+    <div class="field" style="margin-top:0.8rem;margin-bottom:0">
+      <label>Interest Rate (APR %)</label>
+      <div class="input-wrap">
+        <input type="number" class="d-rate no-prefix" value="15" min="0" max="100" step="0.1">
+      </div>
+    </div>`;
+  list.appendChild(div);
+}
+
+function removeDebt(btn) {
+  const items = document.querySelectorAll('.debt-item');
+  if (items.length <= 1) return;
+  btn.closest('.debt-item').remove();
+}
+
+function calcDebt() {
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const items = document.querySelectorAll('.debt-item');
+
+  let debts = [];
+  items.forEach(item => {
+    const balance = parseFloat(item.querySelector('.d-balance').value) || 0;
+    const min = parseFloat(item.querySelector('.d-min').value) || 0;
+    const rate = parseFloat(item.querySelector('.d-rate').value) || 0;
+    const name = item.querySelector('.d-name').value || 'Debt';
+    if (balance > 0) debts.push({ name, balance, min, rate: rate / 100 / 12 });
+  });
+
+  // Sort by balance (snowball)
+  debts.sort((a, b) => a.balance - b.balance);
+
+  const totalDebt = debts.reduce((s, d) => s + d.balance, 0);
+  let totalPaid = 0;
+  let month = 0;
+  let timeline = [];
+
+  // Simulate snowball
+  while (debts.some(d => d.balance > 0) && month < 600) {
+    month++;
+    let freed = 0;
+
+    // Determine extra to apply (to smallest remaining debt)
+    let extraPool = extra;
+
+    for (let i = 0; i < debts.length; i++) {
+      if (debts[i].balance <= 0) { freed += debts[i].min; continue; }
+
+      const interest = debts[i].balance * debts[i].rate;
+      let payment = debts[i].min;
+      if (i === debts.findIndex(d => d.balance > 0)) payment += extraPool + freed;
+
+      payment = Math.min(payment, debts[i].balance + interest);
+      debts[i].balance = debts[i].balance + interest - payment;
+      totalPaid += payment;
+
+      if (debts[i].balance <= 0.01) {
+        debts[i].balance = 0;
+        timeline.push({ name: debts[i].name, month });
+      }
+    }
+  }
+
+  const interest = totalPaid - totalDebt;
+  const freeDate = addMonths(new Date(), month);
+
+  document.getElementById('dr-total-months').textContent = month;
+  document.getElementById('dr-total-debt').textContent = fmt(totalDebt);
+  document.getElementById('dr-interest').textContent = fmt(interest);
+  document.getElementById('dr-total-paid').textContent = fmt(totalPaid);
+  document.getElementById('dr-date').textContent =
+    monthName[freeDate.getMonth()] + ' ' + freeDate.getFullYear();
+
+  const tl = document.getElementById('dr-timeline');
+  tl.innerHTML = '';
+  timeline.forEach((t, i) => {
+    const d = addMonths(new Date(), t.month);
+    tl.innerHTML += `<div class="timeline-item">
+      <div class="timeline-dot" style="background:${i===0?'var(--green)':i===timeline.length-1?'var(--gold)':'var(--text-muted)'}"></div>
+      <span class="timeline-label">${t.name} paid off</span>
+      <span class="timeline-date">${monthName[d.getMonth()]} ${d.getFullYear()}</span>
+    </div>`;
+  });
+}
+
+// ═══════════════════════════════════════
+// TOOL 2: RETIREMENT
+// ═══════════════════════════════════════
+function calcRetirement() {
+  const age = parseInt(document.getElementById('r-age').value) || 30;
+  const retire = parseInt(document.getElementById('r-retire').value) || 65;
+  const current = parseFloat(document.getElementById('r-current').value) || 0;
+  const monthly = parseFloat(document.getElementById('r-monthly').value) || 0;
+  const rate = parseFloat(document.getElementById('r-rate').value) / 100;
+  const match = parseFloat(document.getElementById('r-match').value) / 100;
+
+  const years = Math.max(retire - age, 1);
+  const months = years * 12;
+  const mr = rate / 12;
+  const monthlyWithMatch = monthly * (1 + match);
+
+  // FV of lump sum + FV of annuity
+  const fvLump = current * Math.pow(1 + mr, months);
+  const fvAnnuity = monthlyWithMatch * ((Math.pow(1 + mr, months) - 1) / mr);
+  const total = fvLump + fvAnnuity;
+
+  const totalContrib = monthly * months + current;
+  const matchValue = monthly * match * months;
+  const growth = total - totalContrib - matchValue;
+  const monthlyIncome = total * 0.04 / 12;
+
+  document.getElementById('ret-total').textContent = fmt(total);
+  document.getElementById('ret-years').textContent = years + ' years';
+  document.getElementById('ret-contrib').textContent = fmt(totalContrib);
+  document.getElementById('ret-match').textContent = fmt(matchValue);
+  document.getElementById('ret-growth').textContent = fmt(growth);
+  document.getElementById('ret-monthly').textContent = fmt(monthlyIncome) + '/mo';
+
+  // Build bar chart (10 bars)
+  const chart = document.getElementById('ret-chart');
+  const labels = document.getElementById('ret-chart-labels');
+  chart.innerHTML = '';
+  labels.innerHTML = '';
+  const steps = 10;
+  let maxVal = 0;
+  const vals = [];
+  for (let i = 1; i <= steps; i++) {
+    const m = Math.round(months * i / steps);
+    const v = current * Math.pow(1+mr, m) + monthlyWithMatch * ((Math.pow(1+mr,m)-1)/mr);
+    vals.push(v);
+    if (v > maxVal) maxVal = v;
+  }
+  vals.forEach((v, i) => {
+    const pct = maxVal > 0 ? (v / maxVal * 100) : 0;
+    chart.innerHTML += `<div class="bar-chart-bar" style="height:${pct}%" title="${fmt(v)}"></div>`;
+    if (i % 2 === 0 || i === 9) {
+      const yr = age + Math.round(years * (i+1) / steps);
+      labels.innerHTML += `<span>${yr}</span>`;
+    } else {
+      labels.innerHTML += `<span></span>`;
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// TOOL 3: BMI + CALORIES
+// ═══════════════════════════════════════
+function calcBMI() {
+  const gender = document.getElementById('bmi-gender').value;
+  const age = parseInt(document.getElementById('bmi-age').value) || 30;
+  const feet = parseInt(document.getElementById('bmi-feet').value) || 5;
+  const inches = parseInt(document.getElementById('bmi-inches').value) || 10;
+  const weight = parseFloat(document.getElementById('bmi-weight').value) || 175;
+  const activity = parseFloat(document.getElementById('bmi-activity').value);
+  const goal = document.getElementById('bmi-goal').value;
+
+  const totalInches = feet * 12 + inches;
+  const heightCm = totalInches * 2.54;
+  const weightKg = weight * 0.453592;
+
+  // BMI
+  const bmi = (weightKg / ((heightCm/100) ** 2));
+
+  // BMR (Mifflin-St Jeor)
+  let bmr;
+  if (gender === 'male') bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+  else bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+
+  const tdee = bmr * activity;
+  let goalCal = tdee;
+  if (goal === 'lose') goalCal = tdee - 500;
+  if (goal === 'gain') goalCal = tdee + 500;
+  goalCal = Math.max(goalCal, 1200);
+
+  // Healthy weight range
+  const minLbs = (18.5 * ((heightCm/100)**2) / 0.453592);
+  const maxLbs = (24.9 * ((heightCm/100)**2) / 0.453592);
+
+  // BMI category
+  let cat, catColor;
+  if (bmi < 18.5) { cat = 'Underweight'; catColor = 'var(--blue)'; }
+  else if (bmi < 25) { cat = '✓ Healthy Weight'; catColor = 'var(--green)'; }
+  else if (bmi < 30) { cat = 'Overweight'; catColor = '#f59e0b'; }
+  else { cat = 'Obese'; catColor = 'var(--red)'; }
+
+  // Gauge pointer (BMI 10-40 mapped to 0-100%)
+  const pct = Math.min(Math.max((bmi - 10) / 30 * 100, 0), 100);
+
+  document.getElementById('bmi-result').textContent = bmi.toFixed(1);
+  document.getElementById('bmi-category').textContent = cat;
+  document.getElementById('bmi-pointer').style.left = pct + '%';
+  document.getElementById('bmi-bmr').textContent = Math.round(bmr) + ' cal/day';
+  document.getElementById('bmi-maintain').textContent = Math.round(tdee) + ' cal/day';
+  document.getElementById('bmi-goal-cal').textContent = Math.round(goalCal) + ' cal/day';
+  document.getElementById('bmi-healthy').textContent = Math.round(minLbs) + '–' + Math.round(maxLbs) + ' lbs';
+
+  // Macros (40/30/30 split)
+  const protein = (goalCal * 0.30) / 4;
+  const carbs = (goalCal * 0.40) / 4;
+  const fat = (goalCal * 0.30) / 9;
+  const macroEl = document.getElementById('bmi-macros');
+  macroEl.innerHTML = '';
+  [['Carbs', carbs, 'g', (goalCal*0.40/goalCal*100).toFixed(0), 'var(--blue)'],
+   ['Protein', protein, 'g', '30', 'var(--green)'],
+   ['Fat', fat, 'g', '30', 'var(--gold)']].forEach(([name, val, unit, pct, color]) => {
+    macroEl.innerHTML += `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.25rem">
+          <span style="color:var(--text-muted)">${name}</span>
+          <span style="font-family:'DM Mono',monospace;color:var(--text)">${Math.round(val)}${unit}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+      </div>`;
+  });
+}
+
+// ═══════════════════════════════════════
+// TOOL 4: SLEEP CYCLES
+// ═══════════════════════════════════════
+function toggleSleepMode() {
+  const mode = document.getElementById('sleep-mode').value;
+  document.getElementById('sleep-wakeup-field').style.display = mode === 'wakeup' ? 'block' : 'none';
+  document.getElementById('sleep-bedtime-field').style.display = mode === 'bedtime' ? 'block' : 'none';
+}
+
+function calcSleep() {
+  const mode = document.getElementById('sleep-mode').value;
+  const latency = parseInt(document.getElementById('sleep-latency').value) || 14;
+  const pref = parseInt(document.getElementById('sleep-cycles-pref').value) || 5;
+  const cycleMin = 90;
+
+  const grid = document.getElementById('sleep-cycles-grid');
+  const primEl = document.getElementById('sleep-primary');
+  const primLabel = document.getElementById('sleep-primary-label');
+  const titleEl = document.getElementById('sleep-result-title');
+
+  grid.innerHTML = '';
+
+  const cycles = [6, 5, 4, 3];
+
+  if (mode === 'wakeup') {
+    const [h, m] = document.getElementById('sleep-wakeup').value.split(':').map(Number);
+    titleEl.textContent = 'When to go to sleep';
+    primLabel.textContent = `Best bedtime (${pref} cycles)`;
+
+    cycles.forEach(c => {
+      const totalMin = c * cycleMin + latency;
+      const bedDate = new Date();
+      bedDate.setHours(h, m, 0);
+      bedDate.setMinutes(bedDate.getMinutes() - totalMin);
+      const bh = bedDate.getHours().toString().padStart(2,'0');
+      const bm = bedDate.getMinutes().toString().padStart(2,'0');
+      const ampm = bedDate.getHours() >= 12 ? 'PM' : 'AM';
+      const h12 = bedDate.getHours() % 12 || 12;
+      const timeStr = `${h12}:${bm} ${ampm}`;
+      const isPreferred = c === pref;
+      if (isPreferred) primEl.textContent = timeStr;
+      grid.innerHTML += `<div class="cycle-card${isPreferred?' best':''}">
+        <div class="cycle-time">${timeStr}</div>
+        <div class="cycle-cycles">${c} cycles · ${c*1.5} hrs</div>
+        ${isPreferred ? '<div class="cycle-badge">Recommended</div>' : ''}
+      </div>`;
+    });
+  } else {
+    const [h, m] = document.getElementById('sleep-bedtime').value.split(':').map(Number);
+    titleEl.textContent = 'When to wake up';
+    primLabel.textContent = `Best wake time (${pref} cycles)`;
+
+    cycles.forEach(c => {
+      const totalMin = c * cycleMin + latency;
+      const wakeDate = new Date();
+      wakeDate.setHours(h, m, 0);
+      wakeDate.setMinutes(wakeDate.getMinutes() + totalMin);
+      const ampm = wakeDate.getHours() >= 12 ? 'PM' : 'AM';
+      const h12 = wakeDate.getHours() % 12 || 12;
+      const bm = wakeDate.getMinutes().toString().padStart(2,'0');
+      const timeStr = `${h12}:${bm} ${ampm}`;
+      const isPreferred = c === pref;
+      if (isPreferred) primEl.textContent = timeStr;
+      grid.innerHTML += `<div class="cycle-card${isPreferred?' best':''}">
+        <div class="cycle-time">${timeStr}</div>
+        <div class="cycle-cycles">${c} cycles · ${c*1.5} hrs</div>
+        ${isPreferred ? '<div class="cycle-badge">Recommended</div>' : ''}
+      </div>`;
+    });
+  }
+}
+
+// ═══════════════════════════════════════
+// TOOL 5: FREELANCE RATE
+// ═══════════════════════════════════════
+function calcFreelance() {
+  const income = parseFloat(document.getElementById('fl-income').value) || 80000;
+  const software = parseFloat(document.getElementById('fl-software').value) || 2400;
+  const health = parseFloat(document.getElementById('fl-health').value) || 6000;
+  const other = parseFloat(document.getElementById('fl-other').value) || 3000;
+  const hours = parseInt(document.getElementById('fl-hours').value) || 30;
+  const weeks = parseInt(document.getElementById('fl-weeks').value) || 48;
+  const taxRate = parseInt(document.getElementById('fl-tax').value) / 100;
+  const profitPct = (parseFloat(document.getElementById('fl-profit').value) || 20) / 100;
+
+  const expenses = software + health + other;
+  const totalHours = hours * weeks;
+
+  // Work backwards: revenue needed to net desired income after tax & expenses
+  // revenue = (income + expenses) / (1 - taxRate) * (1 + profitPct)
+  const preTaxNeeded = (income + expenses);
+  const grossNeeded = preTaxNeeded / (1 - taxRate);
+  const totalRevenue = grossNeeded * (1 + profitPct);
+  const hourlyRate = totalRevenue / totalHours;
+
+  const taxAmount = grossNeeded * taxRate;
+  const profitBuffer = totalRevenue - grossNeeded;
+
+  document.getElementById('fl-hourly').textContent = fmt(hourlyRate) + '/hr';
+  document.getElementById('fl-daily').textContent = fmt(hourlyRate * 8);
+  document.getElementById('fl-project').textContent = fmt(hourlyRate * 40);
+  document.getElementById('fl-monthly').textContent = fmt(hourlyRate * hours * 4.33);
+  document.getElementById('fl-annual').textContent = fmt(totalRevenue);
+
+  document.getElementById('fl-b-income').textContent = fmt(income);
+  document.getElementById('fl-b-expenses').textContent = fmt(expenses);
+  document.getElementById('fl-b-tax').textContent = fmt(taxAmount);
+  document.getElementById('fl-b-profit').textContent = fmt(profitBuffer);
+  document.getElementById('fl-b-hours').textContent = fmtN(totalHours) + ' hrs';
+}
+
+// ─── Auto-calc on load ───
+calcDebt();
+calcRetirement();
+calcBMI();
+calcSleep();
+calcFreelance();
+</script>
+</body>
+</html>
+
