@@ -1,0 +1,3 @@
+Contact: mailto:hello@fin-clear.com
+Preferred-Languages: en
+Canonical: https://www.fin-clear.com/.well-known/security.txt

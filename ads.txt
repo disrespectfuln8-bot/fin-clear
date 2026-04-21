@@ -1,0 +1,5 @@
+# FinClear — No authorized digital sellers.
+# This site does not sell advertising inventory and has no authorized
+# digital sellers of any kind. Any ads.txt entries claiming to represent
+# fin-clear.com should be considered unauthorized.
+contact=support@fin-clear.com
