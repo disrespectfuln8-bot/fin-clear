@@ -1,0 +1,17 @@
+/wp*                  /     301
+/wordpress*           /     301
+/blog*                /     301
+/test*                /     301
+/shop*                /     301
+/cms*                 /     301
+/2018*                /     301
+/2020*                /     301
+/site*                /     301
+/sito*                /     301
+/wp2*                 /     301
+/xmlrpc.php           /     301
+/wlwmanifest.xml      /     301
+/security.txt         /.well-known/security.txt   301
+/ads.txt              /ads.txt                     301
+/https:*              /     301
+/http:*               /     301

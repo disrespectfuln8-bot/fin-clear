@@ -1,0 +1,10 @@
+{
+  "name": "fin-clear",
+  "private": true,
+  "version": "1.0.0",
+  "description": "FinClear — free financial & wellness calculators",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@netlify/functions": "^2.8.0"
+  }
+}
